@@ -18,8 +18,6 @@ requirejs(['./storage'], function( storage ) {
 	
 	storageObject.data = 'bar';
 	console.log(storageObject) // { "data":"bar" }
-	
-	console.log( storage.getExpirationDate('foo') ); // a date object	
 });
 ```
 
