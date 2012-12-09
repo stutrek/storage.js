@@ -18,6 +18,6 @@ requirejs(['./storage'], function( storage ) {
 
 ```
 
-The next time you request a a storage object with the key foo (as long as it's within the next week), its data attribute will be 'bar'.
+The next time you request a storage object with the key foo (as long as it's within the next week), its data attribute will be 'bar'.
 
 The default expiration date is one year from the time the item is requested.
