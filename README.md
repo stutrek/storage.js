@@ -14,7 +14,7 @@ requirejs(['./storage'], function( storage ) {
 	console.log(storageObject) // { "expirationDate":"2012-12-16T20:27:23.622Z" }
 	
 	storageObject.data = 'bar';
-	console.log(storageObject) // { "data":"bar", "expirationDate":"2013-12-16T20:27:23.622Z" }
+	console.log(storageObject) // { "data":"bar", "expirationDate":"2012-12-16T20:27:23.622Z" }
 	
 });
 
