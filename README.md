@@ -35,4 +35,16 @@ requirejs(['./storage'], function( storage ) {
 });
 ```
 
+## A Little More
 
+Storage objects have no methods or properties, but the storage module does.
+
+```javascript
+requirejs(['./storage'], function( storage ) {
+	
+	storage.get( "key", expirationDate ); // gets or creates a new storage object
+	storage.getExpirationDate( "key" ); // returns a date object representing the expiration date of the key.
+	storage.save(); // saves all storage objects. Use to prevent data loss if you have a long running app.
+	
+});
+```
