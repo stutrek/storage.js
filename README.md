@@ -2,6 +2,10 @@
 
 This is a simple interface to localStorage that adds expiration dates. To use it simply request a key and provide an expiration date and you will receive an object that you can extend with JSONable properties.
 
+Storage objects are saved to localStorage on the [beforeUnload event](https://developer.mozilla.org/en-US/docs/DOM/window.onbeforeunload). Unless the browser crashes or the power goes out your data will be safe until it expires.
+
+The default expiration date is one year from the time the item is requested.
+
 ## Basic Usage
 
 ```javascript
@@ -32,6 +36,3 @@ requirejs(['./storage'], function( storage ) {
 ```
 
 
-Storage objects are saved to localStorage on the [beforeUnload event](https://developer.mozilla.org/en-US/docs/DOM/window.onbeforeunload). Unless the browser crashes or the power goes out your data will be safe until it expires.
-
-The default expiration date is one year from the time the item is requested.
