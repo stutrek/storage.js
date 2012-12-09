@@ -18,6 +18,7 @@ requirejs(['./storage'], function( storage ) {
 	
 	storageObject.data = 'bar';
 	console.log(storageObject) // { "data":"bar" }
+
 });
 ```
 
@@ -30,6 +31,7 @@ requirejs(['./storage'], function( storage ) {
 	
 	var storageObject = storage.get( 'foo', oneWeekFromNow );
 	console.log(storageObject) // { "data":"bar" }
+
 });
 ```
 
