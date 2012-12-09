@@ -11,10 +11,12 @@ requirejs(['./storage'], function( storage ) {
 	var oneWeekFromNow = new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
 	
 	var storageObject = storage.get( 'foo', oneWeekFromNow );
-	console.log(storageObject) // { "expirationDate":"2012-12-16T20:27:23.622Z" }
+	console.log(storageObject) // {}
 	
 	storageObject.data = 'bar';
-	console.log(storageObject) // { "data":"bar", "expirationDate":"2012-12-16T20:27:23.622Z" }
+	console.log(storageObject) // { "data":"bar" }
+	
+	console.log( storage.getExpirationDate('foo') ); // a date object
 	
 });
 
