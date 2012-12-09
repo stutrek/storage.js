@@ -5,7 +5,6 @@ This is a simple interface to localStorage that adds expiration dates. To use it
 ## Basic Usage
 
 ```javascript
-
 requirejs(['./storage'], function( storage ) {
 	
 	var oneWeekFromNow = new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
@@ -16,11 +15,22 @@ requirejs(['./storage'], function( storage ) {
 	storageObject.data = 'bar';
 	console.log(storageObject) // { "data":"bar" }
 	
-	console.log( storage.getExpirationDate('foo') ); // a date object
-	
+	console.log( storage.getExpirationDate('foo') ); // a date object	
 });
-
 ```
+
+Then, after a reload:
+
+```javascript
+requirejs(['./storage'], function( storage ) {
+	
+	var oneWeekFromNow = new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
+	
+	var storageObject = storage.get( 'foo', oneWeekFromNow );
+	console.log(storageObject) // { "data":"bar" }
+});
+```
+
 
 Storage objects are saved to localStorage on the [beforeUnload event](https://developer.mozilla.org/en-US/docs/DOM/window.onbeforeunload). Unless the browser crashes or the power goes out your data will be safe until it expires.
 
