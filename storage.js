@@ -1,30 +1,32 @@
 define(function( require, exports, module ) {
+	"use strict"
 	
-	var namespace = 'storage-data';
+	var namespace = 'storage-';
 	
 	// load previously saved objects
-	var storageObjects = JSON.parse( localStorage.getItem(namespace) ) || {};
+	var storageObjects = JSON.parse( localStorage.getItem(namespace+'-data') ) || {};
+	var expirationDates = JSON.parse( localStorage.getItem(namespace+'-expirationDates') ) || {};
 	
 	// convert date to Date object, delete expired objects
 	var now = new Date();
-	for (key in storageObjects) {
-		var storageObj = storageObjects[key];
-		storageObj.expirationDate = new Date( storageObj.expirationDate );
-		if (storageObj.expirationDate < now) {
+	for (var key in storageObjects) {
+		expirationDates[key] = new Date( expirationDates[key] );
+		if (expirationDates[key] < now) {
 			delete storageObjects[key];
+			delete expirationDates[key];
 		}
 	}
 	
 	function saveAll() {
 		var now = new Date().getTime();
-		for (var key in storageObjects) {
-			var storageObj = storageObjects[key];
-			
-			if (storageObj.expirationDate < now) {
-				delete storageObjects[key]	
+		for (var key in storageObjects) {			
+			if (expirationDates[key] < now) {
+				delete storageObjects[key];
+				delete expirationDates[key];
 			}
 		}
-		localStorage.setItem(namespace, JSON.stringify(storageObjects))
+		localStorage.setItem(namespace+'-data', JSON.stringify(storageObjects))
+		localStorage.setItem(namespace+'-expirationDates', JSON.stringify(expirationDates))
 	}
 	
 	try {
@@ -41,18 +43,16 @@ define(function( require, exports, module ) {
 	
 		expirationDate = new Date(expirationDate);
 		
-		var storageObj = storageObjects[key];
-		
-		if (!storageObj || storageObj.expirationDate < new Date() ) {
-			storageObj = {
-				expirationDate: expirationDate
-			};
-			storageObjects[key] = storageObj;
-		} else {
-			storageObj.expirationDate = expirationDate;
+		if (!storageObjects[key] || expirationDates[key] < new Date() ) {
+			storageObjects[key] = {};
 		}
+		expirationDates[key] = expirationDate;
 		
-		return storageObj;
+		return storageObjects[key];
+	};
+	
+	exports.getExpirationDate = function( key ) {
+		return expirationDates[key]
 	};
 	
 	exports.save = saveAll;
