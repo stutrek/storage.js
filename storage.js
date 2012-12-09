@@ -4,8 +4,8 @@ define(function( require, exports, module ) {
 	var namespace = 'storage-';
 	
 	// load previously saved objects
-	var storageObjects = JSON.parse( localStorage.getItem(namespace+'-data') ) || {};
-	var expirationDates = JSON.parse( localStorage.getItem(namespace+'-expirationDates') ) || {};
+	var storageObjects = JSON.parse( localStorage.getItem(namespace+'data') ) || {};
+	var expirationDates = JSON.parse( localStorage.getItem(namespace+'expirationDates') ) || {};
 	
 	// convert date to Date object, delete expired objects
 	var now = new Date();
@@ -25,8 +25,8 @@ define(function( require, exports, module ) {
 				delete expirationDates[key];
 			}
 		}
-		localStorage.setItem(namespace+'-data', JSON.stringify(storageObjects))
-		localStorage.setItem(namespace+'-expirationDates', JSON.stringify(expirationDates))
+		localStorage.setItem(namespace+'data', JSON.stringify(storageObjects))
+		localStorage.setItem(namespace+'expirationDates', JSON.stringify(expirationDates))
 	}
 	
 	try {
