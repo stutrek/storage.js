@@ -2,58 +2,78 @@ define(function( require, exports, module ) {
 	"use strict"
 	
 	var namespace = 'storage-';
+
+	var localObjects = {};
+	var sessionObjects = {};
+
+	var localExpirationDates = JSON.parse( localStorage.getItem(namespace+'storageModuleExpirationDates') ) || {};
+	var sessionExpirationDates = JSON.parse( sessionStorage.getItem(namespace+'storageModuleExpirationDates') ) || {};
 	
-	// load previously saved objects
-	var storageObjects = JSON.parse( localStorage.getItem(namespace+'data') ) || {};
-	var expirationDates = JSON.parse( localStorage.getItem(namespace+'expirationDates') ) || {};
-	
-	// convert date to Date object, delete expired objects
-	var now = new Date();
-	for (var key in storageObjects) {
-		expirationDates[key] = new Date( expirationDates[key] );
-		if (expirationDates[key] < now) {
-			delete storageObjects[key];
-			delete expirationDates[key];
-		}
+	// turn expiration dates into Dates.
+	for (var key in localExpirationDates) {
+		localExpirationDates[key] = new Date( localExpirationDates[key] );
 	}
-	
-	function saveAll() {
-		var now = new Date().getTime();
-		for (var key in storageObjects) {			
-			if (expirationDates[key] < now) {
-				delete storageObjects[key];
-				delete expirationDates[key];
+	for (var key in sessionExpirationDates) {
+		sessionExpirationDates[key] = new Date( sessionExpirationDates[key] );
+	}
+
+	// removeds a key from storage
+	function expire( key, expirationObject, activeObjects, storageMethod ) {
+		storageMethod.removeItem(key);
+		delete expirationObject[key];
+		delete activeObjects[key];
+	}
+
+	// checks expiration objects for expired data
+	function checkExpirations( expirationObject, activeObjects, storageMethod ) {
+		var now = new Date();
+		for (var key in expirationObject) {
+			if (localExpirationDates[key] < now) {
+				expire( key, expirationObject, activeObjects, storageMethod );
 			}
 		}
-		localStorage.setItem(namespace+'data', JSON.stringify(storageObjects))
-		localStorage.setItem(namespace+'expirationDates', JSON.stringify(expirationDates))
 	}
-	
-	try {
-		window.addEventListener( 'beforeunload', saveAll, true );
-	} catch(e) {
-		window.attachEvent( 'onbeforeunload', saveAll );
-	}
-	
-	exports.get = function( key, expirationDate ) {
-		
+
+	function get( key, expirationDate, expirationObject, activeObjects, storageMethod ) {
+		key = namespace+key;
+
 		if (!expirationDate) {
-			expirationDate = new Date().getTime() + (1000 * 60 * 60 * 24 * 365)
+			expirationDate = new Date().getTime() + (1000 * 60 * 60 * 24 * 365);
 		}
 	
 		expirationDate = new Date(expirationDate);
-		
-		if (!storageObjects[key] || expirationDates[key] < new Date() ) {
-			storageObjects[key] = {};
+
+		if (!expirationObject[key]) {
+			activeObjects[key] = {};
+		} else if (expirationObject[key] && !activeObjects[key]) {
+			activeObjects[key] = JSON.parse(storageMethod.getItem(key));
 		}
-		expirationDates[key] = expirationDate;
-		
-		return storageObjects[key];
+
+		expirationObject[key] = expirationDate;
+		storageMethod.setItem( namespace+'storageModuleExpirationDates', JSON.stringify(expirationObject) )
+
+		var storageObject = activeObjects[key];
+
+		storageObject.save = function save() {
+			if (new Date() < expirationDate) {
+				delete storageObject.save;
+				storageMethod.setItem(key, JSON.stringify(storageObject));
+				storageObject.save = save;
+			}
+		};
+
+		return storageObject;
+	}
+
+	checkExpirations( localExpirationDates, localObjects, localStorage );
+	checkExpirations( sessionExpirationDates, sessionObjects, sessionStorage );
+
+	exports.get = function( key, expirationDate ) {
+		return get( key, expirationDate, localExpirationDates, localObjects, localStorage );
 	};
-	
-	exports.getExpirationDate = function( key ) {
-		return expirationDates[key]
+
+	exports.getSession = function( key, expirationDate ) {
+		return get( key, expirationDate, sessionExpirationDates, sessionObjects, sessionStorage );
 	};
-	
-	exports.save = saveAll;
+
 });

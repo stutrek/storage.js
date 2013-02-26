@@ -1,10 +1,8 @@
 # Storage
 
-This is a simple interface to localStorage that adds expiration dates. To use it simply request a key and provide an expiration date and you will receive an object that you can extend with JSONable properties.
+This  interface to localStorage and sessionStorage that adds expiration dates. To use it simply request a key and provide an expiration date and you will receive an object that you can extend with JSONable properties. Call the `save` method on the object it provides to save your data to localStorage or sessionStorage.
 
-Storage objects are saved to localStorage on the [beforeUnload event](https://developer.mozilla.org/en-US/docs/DOM/window.onbeforeunload). Unless the browser crashes or the power goes out your data will be safe until it expires.
-
-The default expiration date is one year from the time the item is requested.
+The default expiration date is one year from the time the item is requested. Expired keys will be deleted on the next page load.
 
 ## Basic Usage
 
@@ -14,10 +12,12 @@ requirejs(['./storage'], function( storage ) {
 	var oneWeekFromNow = new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
 	
 	var storageObject = storage.get( 'foo', oneWeekFromNow );
-	console.log(storageObject) // {}
+	console.log(storageObject) // { "save": function(){...} }
 	
 	storageObject.data = 'bar';
-	console.log(storageObject) // { "data":"bar" }
+	console.log(storageObject); // { "data":"bar", "save": function(){...} }
+
+	storageObject.save();
 
 });
 ```
@@ -30,21 +30,16 @@ requirejs(['./storage'], function( storage ) {
 	var oneWeekFromNow = new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
 	
 	var storageObject = storage.get( 'foo', oneWeekFromNow );
-	console.log(storageObject) // { "data":"bar" }
+	console.log(storageObject) // { "data":"bar", "save": function(){...} }
 
 });
 ```
 
-## A Little More
+## Storage Module Methods
 
-Storage objects have no methods or properties, but the storage module does.
+* `storage.get( key, expirationDate )` - gets an object from localStorage
+* `storage.getSession( key, expirationDate )` - gets an object from sessionStorage
 
-```javascript
-requirejs(['./storage'], function( storage ) {
-	
-	storage.get( "key", expirationDate ); // gets or creates a new storage object
-	storage.getExpirationDate( "key" ); // returns a date object representing the expiration date of the key.
-	storage.save(); // saves all storage objects. Use to prevent data loss if you have a long running app.
-	
-});
-```
+## Storage Objects
+
+* `storageObject.save()` - saves the data on this storage object to localStorage or sessionStorage.
