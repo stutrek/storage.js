@@ -34,35 +34,41 @@ define(function( require, exports, module ) {
 		}
 	}
 
-	function get( key, expirationDate, expirationObject, activeObjects, storageMethod ) {
+	function get( key, expirationDateFromGet, expirationObject, activeObjects, storageMethod ) {
 		key = namespace+key;
 
-		if (!expirationDate) {
-			expirationDate = new Date().getTime() + (1000 * 60 * 60 * 24 * 365);
-		}
-	
-		expirationDate = new Date(expirationDate);
-
-		if (!expirationObject[key]) {
-			activeObjects[key] = {};
-		} else if (expirationObject[key] && !activeObjects[key]) {
-			activeObjects[key] = JSON.parse(storageMethod.getItem(key));
+		if (expirationDateFromGet) {
+			expirationDateFromGet = new Date(expirationDateFromGet)
 		}
 
-		expirationObject[key] = expirationDate;
-		storageMethod.setItem( namespace+'storageModuleExpirationDates', JSON.stringify(expirationObject) )
-
-		var storageObject = activeObjects[key];
-
-		storageObject.save = function save() {
-			if (new Date() < expirationDate) {
-				delete storageObject.save;
-				storageMethod.setItem(key, JSON.stringify(storageObject));
-				storageObject.save = save;
+		if (!activeObjects[key]) {
+			if (!expirationObject[key]) {
+				activeObjects[key] = {};
+			} else {
+				activeObjects[key] = JSON.parse(storageMethod.getItem(key)) || {};
 			}
-		};
+			// extend storage object with save function
+			activeObjects[key].save = function save( expirationDate ) {
+				
+				if (!expirationDate && expirationDateFromGet) {
+					expirationDate = expirationDateFromGet;
+				} else if (!expirationDate) {
+					expirationDate = new Date().getTime() + (1000 * 60 * 60 * 24 * 365);
+				}
 
-		return storageObject;
+				if (new Date() < expirationDate) {
+					delete activeObjects[key].save;
+					expirationObject[key] = expirationDate;
+					storageMethod.setItem( namespace+'storageModuleExpirationDates', JSON.stringify(expirationObject) )
+					storageMethod.setItem(key, JSON.stringify(activeObjects[key]));
+					activeObjects[key].save = save;
+				} else {
+					expire( key, expirationObject, activeObjects, storageMethod );
+				}
+			};
+		}
+
+		return activeObjects[key];
 	}
 
 	checkExpirations( localExpirationDates, localObjects, localStorage );

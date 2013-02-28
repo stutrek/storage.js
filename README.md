@@ -9,15 +9,14 @@ The default expiration date is one year from the time the item is requested. Exp
 ```javascript
 requirejs(['./storage'], function( storage ) {
 	
-	var oneWeekFromNow = new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
-	
-	var storageObject = storage.get( 'foo', oneWeekFromNow );
+	var storageObject = storage.get( 'foo' );
 	console.log(storageObject) // { "save": function(){...} }
 	
 	storageObject.data = 'bar';
 	console.log(storageObject); // { "data":"bar", "save": function(){...} }
 
-	storageObject.save();
+	var oneWeekFromNow = new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
+	storageObject.save( oneWeekFromNow );
 
 });
 ```
@@ -26,10 +25,8 @@ Then, after a reload:
 
 ```javascript
 requirejs(['./storage'], function( storage ) {
-	
-	var oneWeekFromNow = new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
-	
-	var storageObject = storage.get( 'foo', oneWeekFromNow );
+		
+	var storageObject = storage.get( 'foo' );
 	console.log(storageObject) // { "data":"bar", "save": function(){...} }
 
 });
@@ -37,9 +34,9 @@ requirejs(['./storage'], function( storage ) {
 
 ## Storage Module Methods
 
-* `storage.get( key, expirationDate )` - gets an object from localStorage
+* `storage.get( key /*, expirationDate */ )` - gets an object from localStorage. expirationDate will only be used if one is not passed into `save`.
 * `storage.getSession( key, expirationDate )` - gets an object from sessionStorage
 
 ## Storage Objects
 
-* `storageObject.save()` - saves the data on this storage object to localStorage or sessionStorage.
+* `storageObject.save( expirationDate )` - saves the data on this storage object to localStorage or sessionStorage. If `expirationDate` is not provided it will use the value passed into the `get` function or default to one year.
