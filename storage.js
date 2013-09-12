@@ -1,5 +1,21 @@
-define(function( require, exports, module ) {
+(function(factory) {
+
+	//AMD
+	if(typeof define === 'function' && define.amd) {
+		define([], factory);
+
+	//NODE
+	} else if(typeof module === 'object' && module.exports) {
+		module.exports = factory();
+
+	//GLOBAL
+	} else {
+		window.storagejs = factory();
+	}
+
+})(function() {
 	"use strict"
+	var exports = {};
 	
 	var namespace = 'storage-';
 
@@ -33,39 +49,48 @@ define(function( require, exports, module ) {
 			}
 		}
 	}
+	function createNewObeject( key, expirationDateFromGet, expirationObject, activeObjects, storageMethod ) {
+		function StorageObject( props ) {
+			for( var key in props ) {
+				this[key] = props[key];
+			}
+		}
+		StorageObject.prototype.save = function( expirationDate ) {
+			if (!expirationDate && expirationDateFromGet) {
+				expirationDate = expirationDateFromGet;
+			} else if (!expirationDate) {
+				expirationDate = new Date().getTime() + (1000 * 60 * 60 * 24 * 365);
+			}
+
+			if (new Date() < expirationDate) {
+				expirationObject[key] = expirationDate;
+				storageMethod.setItem( namespace+'storageModuleExpirationDates', JSON.stringify(expirationObject) );
+				storageMethod.setItem(key, JSON.stringify(activeObjects[key]));
+			} else {
+				expire( key, expirationObject, activeObjects, storageMethod );
+			}
+		};
+		StorageObject.prototype.safeSave = function( expirationDate ) {
+			try {
+				this.save( expirationDate );
+				return true;
+			} catch (e) {
+				return false;
+			}
+		};
+
+		return new StorageObject( JSON.parse(storageMethod.getItem(key)) || {} );
+	}
 
 	function get( key, expirationDateFromGet, expirationObject, activeObjects, storageMethod ) {
 		key = namespace+key;
 
 		if (expirationDateFromGet) {
-			expirationDateFromGet = new Date(expirationDateFromGet)
+			expirationDateFromGet = new Date(expirationDateFromGet);
 		}
 
 		if (!activeObjects[key]) {
-			if (!expirationObject[key]) {
-				activeObjects[key] = {};
-			} else {
-				activeObjects[key] = JSON.parse(storageMethod.getItem(key)) || {};
-			}
-			// extend storage object with save function
-			activeObjects[key].save = function save( expirationDate ) {
-				
-				if (!expirationDate && expirationDateFromGet) {
-					expirationDate = expirationDateFromGet;
-				} else if (!expirationDate) {
-					expirationDate = new Date().getTime() + (1000 * 60 * 60 * 24 * 365);
-				}
-
-				if (new Date() < expirationDate) {
-					delete activeObjects[key].save;
-					expirationObject[key] = expirationDate;
-					storageMethod.setItem( namespace+'storageModuleExpirationDates', JSON.stringify(expirationObject) )
-					storageMethod.setItem(key, JSON.stringify(activeObjects[key]));
-					activeObjects[key].save = save;
-				} else {
-					expire( key, expirationObject, activeObjects, storageMethod );
-				}
-			};
+			activeObjects[key] = createNewObeject( key, expirationDateFromGet, expirationObject, activeObjects, storageMethod );
 		}
 
 		return activeObjects[key];
@@ -82,4 +107,5 @@ define(function( require, exports, module ) {
 		return get( key, expirationDate, sessionExpirationDates, sessionObjects, sessionStorage );
 	};
 
+	return exports;
 });
