@@ -79,7 +79,14 @@
 			}
 		};
 
-		return new StorageObject( JSON.parse(storageMethod.getItem(key)) || {} );
+		var parsed;
+		try {
+			parsed = JSON.parse(storageMethod.getItem(key));
+		} catch (e) {
+			parsed = {};
+		}
+
+		return new StorageObject( parsed );
 	}
 
 	function get( key, expirationDateFromGet, expirationObject, activeObjects, storageMethod ) {
