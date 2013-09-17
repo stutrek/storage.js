@@ -44,7 +44,7 @@
 	function checkExpirations( expirationObject, activeObjects, storageMethod ) {
 		var now = new Date();
 		for (var key in expirationObject) {
-			if (localExpirationDates[key] < now) {
+			if (expirationObject[key] < now) {
 				expire( key, expirationObject, activeObjects, storageMethod );
 			}
 		}
