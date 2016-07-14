@@ -65,7 +65,9 @@
 			if (new Date() < expirationDate) {
 				expirationObject[key] = expirationDate;
 				storageMethod.setItem( namespace+'storageModuleExpirationDates', JSON.stringify(expirationObject) );
-				storageMethod.setItem(key, JSON.stringify(activeObjects[key]));
+				storageMethod.setItem(key, JSON.stringify(activeObjects[key], function (k, v) {
+					return activeObjects[key].hasOwnProperty(k);
+				}));
 			} else {
 				expire( key, expirationObject, activeObjects, storageMethod );
 			}
